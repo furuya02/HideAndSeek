@@ -28,8 +28,6 @@
             this.MainMenuClear = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
             this.MainMenuExit = new System.Windows.Forms.ToolStripMenuItem();
-            this.MainMenuView = new System.Windows.Forms.ToolStripMenuItem();
-            this.MainMenuOnlyTcp = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenuMode = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenuModeBind = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenuModePcap = new System.Windows.Forms.ToolStripMenuItem();
@@ -61,7 +59,6 @@
             this.menuStrip.Font = new System.Drawing.Font("メイリオ", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MainMenuFile,
-            this.MainMenuView,
             this.MainMenuMode});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
@@ -98,23 +95,6 @@
             this.MainMenuExit.Size = new System.Drawing.Size(130, 22);
             this.MainMenuExit.Text = "終了(&X)";
             this.MainMenuExit.Click += new System.EventHandler(this.MainMenuExit_Click);
-            // 
-            // MainMenuView
-            // 
-            this.MainMenuView.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.MainMenuOnlyTcp});
-            this.MainMenuView.Name = "MainMenuView";
-            this.MainMenuView.Size = new System.Drawing.Size(60, 22);
-            this.MainMenuView.Text = "表示(&V)";
-            // 
-            // MainMenuOnlyTcp
-            // 
-            this.MainMenuOnlyTcp.Checked = true;
-            this.MainMenuOnlyTcp.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.MainMenuOnlyTcp.Name = "MainMenuOnlyTcp";
-            this.MainMenuOnlyTcp.Size = new System.Drawing.Size(180, 22);
-            this.MainMenuOnlyTcp.Text = "TCPのみ表示する(&T)";
-            this.MainMenuOnlyTcp.Click += new System.EventHandler(this.MainMenuOnlyTcp_Click);
             // 
             // MainMenuMode
             // 
@@ -307,8 +287,6 @@
         private System.Windows.Forms.ColumnHeader columnHeader1;
         private System.Windows.Forms.ColumnHeader columnHeader2;
         private System.Windows.Forms.ColumnHeader columnHeader3;
-        private System.Windows.Forms.ToolStripMenuItem MainMenuView;
-        private System.Windows.Forms.ToolStripMenuItem MainMenuOnlyTcp;
         private System.Windows.Forms.ToolStripMenuItem MainMenuMode;
         private System.Windows.Forms.ToolStripMenuItem MainMenuModeBind;
         private System.Windows.Forms.ToolStripMenuItem MainMenuModePcap;

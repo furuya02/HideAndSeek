@@ -27,11 +27,13 @@ namespace HideAndSeek {
         Substitute _substitute = null;
         Capture _capture = null;
         Mode _mode;
+        CaptureView _captureView;
 
-        public WebServer(int port,Log log,Mode mode) {
+        public WebServer(int port, Log log, CaptureView captureView,Mode mode) {
             _log = log;
             _port = port;
             _mode = mode;
+            _captureView = captureView;
 
             documentRoot = Path.GetFullPath(Directory.GetCurrentDirectory() + "\\..\\..\\..\\www");
 
@@ -40,25 +42,44 @@ namespace HideAndSeek {
 
             if (_mode == Mode.Bind) {
                 _t = new Thread(Loop_0) { IsBackground = true };
+                _captureView.Enable= false;
             } else {
                 _t = new Thread(Loop_1) { IsBackground = true };
                 _capture = new Capture();
                 _substitute = new Substitute(_capture, port, _log);
 
+                _capture.OnCapture += new OnCaptureHandler(_capture_OnCapture);
+                _captureView.Enable = true;
+
                 Form2 dlg = new Form2();//デバイス選択ダイアログ
                 var ar = _capture.GetAdapterList();
                 foreach (var a in ar) {
-                    dlg.ListBox.Items.Add(a.Description);
+                    var sb = new StringBuilder();
+                    sb.Append(a.Description);
+                    sb.Append(" ");
+                    foreach (var s in a.Ip) {
+                        sb.Append(s);
+                        sb.Append(" , ");
+                    }
+
+                    dlg.ListBox.Items.Add(sb.ToString());
                 }
                 dlg.ListBox.SelectedIndex = 0;
 
+                _captureView.Adapter = null;
                 if (DialogResult.OK == dlg.ShowDialog()) {
                     int index = dlg.ListBox.SelectedIndex;
                     _capture.Start(ar[index].Name, dlg.Promiscuous);
+                    _captureView.Adapter = ar[index];
+                    _substitute.Adapter = ar[index];
                 }
 
             }
             _t.Start();
+        }
+
+        void _capture_OnCapture(RecvPacket p) {
+            _captureView.Set(p);
         }
         public void Dispose() {
             if (_t != null) {//起動されている場合
@@ -70,6 +91,7 @@ namespace HideAndSeek {
             _t = null;
 
             if (_mode == Mode.Pcap) {
+                _capture.OnCapture -= _capture_OnCapture;
                 _capture.Dispose();
                 _capture = null;
                 _substitute = null;
@@ -122,7 +144,7 @@ namespace HideAndSeek {
 
                     Job_1(request, session);
 
-                    session.Close();
+                    //session.Close();
                 } catch { }
 
             }
@@ -222,12 +244,14 @@ namespace HideAndSeek {
                         sb.Append("Content-Type: image/jpg\r\n");
                         break;
                 }
+
+                sb.Append("Connection: close\r\n");
                 sb.Append("\r\n");
                 var header = Encoding.ASCII.GetBytes(sb.ToString());
 
-                session.Write(header, 0, header.Length);
+                session.Write(header, 0, header.Length,false);
                 var file = File.ReadAllBytes(path);
-                session.Write(file, 0, file.Length);
+                session.Write(file, 0, file.Length,true);
                 
                 
                 //var buf = new byte[header.Length+info.Length];
@@ -241,7 +265,7 @@ namespace HideAndSeek {
                 sb.Append("HTTP/1.1 404 Not Found\r\n");
                 sb.Append("\r\n");
                 var buf = Encoding.ASCII.GetBytes(sb.ToString());
-                session.Write(buf, 0, buf.Length);
+                session.Write(buf, 0, buf.Length,true);
             }
         }
     }

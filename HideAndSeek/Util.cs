@@ -5,6 +5,10 @@ using System.Text;
 
 namespace HideAndSeek {
     class Util {
+        /**************************************************************/
+        // Utility
+        /**************************************************************/
+
         static public ushort htons(ushort i) {
             return (ushort)((i << 8) + (i >> 8));
         }
@@ -13,7 +17,7 @@ namespace HideAndSeek {
         }
 
         static public string Mac2Str(byte[] mac) {
-            return string.Format("{0:x2}-{1:x2}-{2:x2}-{3:x2}-{4:x2}-{5:x2}"
+            return string.Format("{0:x2}:{1:x2}:{2:x2}:{3:x2}:{4:x2}:{5:x2}"
                  , mac[0], mac[1], mac[2]
                  , mac[3], mac[4], mac[5]);
         }

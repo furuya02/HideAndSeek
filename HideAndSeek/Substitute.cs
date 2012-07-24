@@ -8,6 +8,8 @@ namespace HideAndSeek {
         List<Session> ar = new List<Session>();
         int _port;
         Log _log;
+        public Adapter Adapter { set; private get; }
+
         public Substitute(Capture capture,int port,Log log) {
             _port = port;
             _log = log;
@@ -21,9 +23,17 @@ namespace HideAndSeek {
                 if (recvPacket.Port[(int)Sd.Dst] != _port)
                     return;
 
-                //自分あて以外は処理しない
-                if (Util.Ip2Str(recvPacket.Ip[(int)Sd.Dst]) != "192.168.0.11")
+                //自分あてのパケット以外は処理しない
+                bool hit = false;
+                foreach (var ip in Adapter.Ip) {
+                    if (Util.Ip2Str(recvPacket.Ip[(int)Sd.Dst]) == ip) {
+                        hit = true;
+                        break;
+                    }
+                }
+                if (!hit)
                     return;
+
 
                 if (recvPacket.Flg == 0x02) {//SYNパケット到着
                     //新しいセッションの開始

@@ -137,8 +137,13 @@ namespace HideAndSeek {
             if(t!=null)
                 t.Abort();
             t = null;
-            if(handle!=IntPtr.Zero)
-                pcap_close(handle);//キャプチャ終了
+            if (handle != IntPtr.Zero) {
+                try {
+                    pcap_close(handle);//キャプチャ終了
+                } catch {
+                
+                }
+            }
             return true;
         }
         //パケット送信

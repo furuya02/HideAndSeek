@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
 using System.Net;
+using System.Management;//参照設定 System.Management
 
 namespace HideAndSeek {
 
@@ -10,7 +11,7 @@ namespace HideAndSeek {
 
     class Capture:IDisposable {
         public event OnCaptureHandler OnCapture = null;
-       
+        public Adapter Adapter { set; private get; }
         public Capture() {
 
             // イベントハンドラの追加
@@ -21,26 +22,38 @@ namespace HideAndSeek {
             WinPcap.Stop();
         }
 
+
         public List<Adapter> GetAdapterList() {
             var ar = new List<Adapter>();
-
             foreach (var a in WinPcap.GetDeviceList()) {
                 ar.Add(new Adapter(a.description,a.name));
                 //TODO IPアドレスを取得
             }
+
+            var ms = new ManagementObjectSearcher("select * from Win32_NetworkAdapterConfiguration");
+            foreach (var m in ms.Get()) {
+                foreach (var a in ar) {
+                    if (a.Name.IndexOf((string)(m["SettingID"])) != -1) {
+                        if (m["IPAddress"] != null) {
+                            foreach (var s in (string[])(m["IPAddress"])) {
+                                a.SetIp(s);
+                           }
+                        }
+                        if (m["MACAddress"] != null) {
+                            a.SetMac((string)(m["MACAddress"]));
+                        }
+                        break;
+                    }
+                }
+            }
             return ar;
         }
+
         public void Start(string name,bool promiscuous) {
             WinPcap.Start(name,promiscuous);
         }
         
-        //ushort htons(ushort i) {
-        //    return (ushort)((i << 8) + (i >> 8));
-        //}
-        //uint htons(uint i) {
-        //    return (uint)((i >> 24) + ((i & 0x00FF0000) >> 8) + ((i & 0x0000FF00) << 8) + (i << 24));
-        //}
-        
+           
         //パケット受信時のイベントハンドラ
         void OnRecv(IntPtr pkt_hdr, IntPtr pkt_data) {
             

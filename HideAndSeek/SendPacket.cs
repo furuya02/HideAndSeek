@@ -45,16 +45,10 @@ namespace HideAndSeek {
             tcpHeader.window = 0x0020;
             tcpHeader.srcPort = recvPacket.tcpHeader.dstPort;
             tcpHeader.dstPort = recvPacket.tcpHeader.srcPort;
-            //var sq = htons(recvPacket.tcpHeader.squence);
-            ////var tl = htons(recvPacket.ipHeader.totalLen);
-            ////sq = sq+tl-40+1;
-            //sq++;
-            //tcpHeader.ack = htons(sq);
             tcpHeader.ack =  Util.htons(ack);
             tcpHeader.squence = Util.htons(squence);
             tcpHeader.offset = 0x50;// TcpHeaderLen=20 byte
             tcpHeader.flg = flg;
-
 
             //チェックサム計算方法
             //http://ja.wikipedia.org/wiki/Transmission_Control_Protocol
@@ -64,6 +58,7 @@ namespace HideAndSeek {
             var b = new byte[ipHeaderLen];
             Buffer.BlockCopy(GetBytes(ipHeader), 0, b, 0, ipHeaderLen);
             ipHeader.checkSum = (short)Util.htons(CreateChecksum(b, 0, ipHeaderLen));
+
 
             //TCPチェックサム
             //擬似ヘッダ + TcpHeader + TCPデータ
@@ -75,8 +70,10 @@ namespace HideAndSeek {
             Buffer.BlockCopy(recvPacket.ipHeader.srcIp, 0, b, 0, 4);
             Buffer.BlockCopy(recvPacket.ipHeader.dstIp, 0, b, 4, 4);
             b[9]=6;//TCP
-            b[10]=0;
-            b[11] = (byte)(tcpHeaderLen+dataLen);
+            int size = tcpHeaderLen + dataLen;
+            b[10] = (byte)((size & 0xFF00) >> 8);
+            b[11] = (byte)(size & 0x00FF);
+            
             tcpHeader.checkSum = (short)Util.htons(CreateChecksum(b, 0, b.Length));
             
             unsafe {

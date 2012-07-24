@@ -15,6 +15,7 @@ namespace HideAndSeek {
         Random rnd = new Random();
         uint squence;
         uint ack = 0;
+        bool CloseFlg = false;
 
         byte[] buffer = new byte[0];
 
@@ -38,8 +39,7 @@ namespace HideAndSeek {
                 
                 Log(string.Format("Create ({0})", Util.Flg2Str(recvPacket.Flg)));
                 
-                byte flg = 0x12;// SYN/ACK
-                Send(0x12,new byte[0]);
+                Send(0x12, new byte[0]);// SYN/ACK
             }
 
         }
@@ -47,7 +47,12 @@ namespace HideAndSeek {
             if (!Life)
                 return false;
 
+            if (CloseFlg)//もう受け付けない
+                return false;
+
             lock (this) {
+
+                Log(string.Format("Recv ({0}) srcPort={1} len={2} {3}", Util.Flg2Str(recvPacket.Flg), recvPacket.Port[(int)Sd.Src],recvPacket.Len, (recvPacket.Len == 0) ? "" : Encoding.ASCII.GetString(recvPacket.Data)));
 
                 //関係ないパケットは処理しない
                 for (int i = 0; i < 2; i++) {
@@ -65,13 +70,13 @@ namespace HideAndSeek {
 
                 if (Util.FIN(recvPacket.Flg)) {
                     
-                    Log(string.Format("Recv ({0})", Util.Flg2Str(recvPacket.Flg)));
+                    //Log(string.Format("Recv ({0})", Util.Flg2Str(recvPacket.Flg)));
                     Send(0x10,new byte[0]);//ACK
 
                     Life = false;
                 } else {
 
-                    Log(string.Format("Recv ({0}) len={1} {2}", Util.Flg2Str(recvPacket.Flg), recvPacket.Len, (recvPacket.Len==0)?"":Encoding.ASCII.GetString(recvPacket.Data)));
+                    //Log(string.Format("Recv ({0}) len={1} {2}", Util.Flg2Str(recvPacket.Flg), recvPacket.Len, (recvPacket.Len==0)?"":Encoding.ASCII.GetString(recvPacket.Data)));
 
                     if (recvPacket.Len != 0) {
 
@@ -100,10 +105,11 @@ namespace HideAndSeek {
             }
         }
 
-        public void Close() {
-            Send(0x11, new byte[0]);//FIN/ACK
-            //Life = false;
-        }
+        //public void Close() {
+        //    CloseFlg = true;
+        //    //Send(0x11, new byte[0]);//FIN/ACK
+        //    //Life = false;
+        //}
         
         public int Read(byte[] buf, int offset,int max) {
             if (buffer.Length == 0)
@@ -127,7 +133,7 @@ namespace HideAndSeek {
                 return l;
             }
         }
-        public int Write(byte[] buf, int offset, int len) {
+        public int Write(byte[] buf, int offset, int len,bool fin) {
             int max = offset + len;
             int p = offset;
             while ((max-p)>0) {
@@ -137,7 +143,13 @@ namespace HideAndSeek {
                 }
                 var data = new byte[l];
                 Buffer.BlockCopy(buf, p, data, 0, l);
-                Send(0x18, data);// PSH/ACK
+                byte flg = 0x18;// PSH/ACK
+                if (0 >= max - (p + l) && fin) {
+                    //if(fin)
+                    flg = 0x19; // FIN/PSH/ACK
+                }
+
+                Send(flg,data);// PSH/ACK
                 p += l;
             }
             return len;
@@ -145,8 +157,8 @@ namespace HideAndSeek {
         void Log(string msg) {
             _log.Set(string.Format("[{0}] {1}", _recvPacket.Port[(int)Sd.Src], msg));
         }
-        void Send(byte flg, byte[] data) {
-            var sendPacket = new SendPacket(_log, _recvPacket, ident++, squence, ack, flg, data);
+        void Send(byte flg,byte[] data) {
+            var sendPacket = new SendPacket(_log, _recvPacket, ident++, squence, ack, flg,data);
             WinPcap.Send(sendPacket.Buf);
             Log(string.Format("Send {0} Len={1} {2}", Util.Flg2Str(flg), data.Length, Encoding.ASCII.GetString(data)));
 
