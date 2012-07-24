@@ -7,7 +7,7 @@ using System.IO;
 using System.Net.Sockets;
 
 namespace HideAndSeek {
-    class Session{
+    class Session:Stream{
         Log _log;
         RecvPacket _recvPacket;
         public bool Life { get; private set; }
@@ -45,6 +45,9 @@ namespace HideAndSeek {
                 Send(0x12, new byte[0]);// SYN/ACK
             }
 
+        }
+        public void Close() {
+            //this.Close();
         }
         public bool Append(RecvPacket recvPacket) {
             if (!Life)
@@ -107,16 +110,8 @@ namespace HideAndSeek {
                 return true;
             }
         }
-
-        //public void Close() {
-        //    CloseFlg = true;
-        //    //Send(0x11, new byte[0]);//FIN/ACK
-        //    //Life = false;
-        //}
-
         
-        
-        public int Read(byte[] buf, int offset,int max) {
+        override public int Read(byte[] buf, int offset,int max) {
             if (buffer.Length == 0)
                 return 0;
             lock (this) {
@@ -138,7 +133,7 @@ namespace HideAndSeek {
                 return l;
             }
         }
-        public int Write(byte[] buf, int offset, int len) {
+        override public void Write(byte[] buf, int offset, int len) {
             int max = offset + len;
             int p = offset;
             while ((max-p)>0) {
@@ -156,7 +151,6 @@ namespace HideAndSeek {
                 Send(flg,data);// PSH/ACK
                 p += l;
             }
-            return len;
         }
         void Log(string msg) {
             _log.Set(string.Format("[{0}] {1}", _recvPacket.Port[(int)Sd.Src], msg));
@@ -169,6 +163,37 @@ namespace HideAndSeek {
 
             squence += (uint)data.Length;
         }
+
+        public override void SetLength(long value) {
+            throw new NotImplementedException();
+        }
+        public override long Seek(long offset, SeekOrigin origin) {
+            throw new NotImplementedException();
+        }
+        public override void Flush() {
+            throw new NotImplementedException();
+        }
+        public override bool CanWrite {
+            get { throw new NotImplementedException(); }
+        }
+        public override bool CanRead {
+            get { throw new NotImplementedException(); }
+        }
+        public override bool CanSeek {
+            get { throw new NotImplementedException(); }
+        }
+        public override long Length {
+            get { throw new NotImplementedException(); }
+        }
+        public override long Position {
+            get {
+                throw new NotImplementedException();
+            }
+            set {
+                throw new NotImplementedException();
+            }
+        }
+
 
     }
 }
