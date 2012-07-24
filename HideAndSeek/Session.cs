@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.IO;
+using System.Net.Sockets;
 
 namespace HideAndSeek {
-    class Session {
+    class Session{
         Log _log;
         RecvPacket _recvPacket;
         public bool Life { get; private set; }
@@ -19,10 +21,11 @@ namespace HideAndSeek {
 
         byte[] buffer = new byte[0];
 
+
         public Session(RecvPacket recvPacket,Log log) {
             lock (this) {
 
-                
+
                 Life = true;
                 Accept = false;
                 _recvPacket = recvPacket;
@@ -110,6 +113,8 @@ namespace HideAndSeek {
         //    //Send(0x11, new byte[0]);//FIN/ACK
         //    //Life = false;
         //}
+
+        
         
         public int Read(byte[] buf, int offset,int max) {
             if (buffer.Length == 0)
@@ -133,7 +138,7 @@ namespace HideAndSeek {
                 return l;
             }
         }
-        public int Write(byte[] buf, int offset, int len,bool fin) {
+        public int Write(byte[] buf, int offset, int len) {
             int max = offset + len;
             int p = offset;
             while ((max-p)>0) {
@@ -144,8 +149,7 @@ namespace HideAndSeek {
                 var data = new byte[l];
                 Buffer.BlockCopy(buf, p, data, 0, l);
                 byte flg = 0x18;// PSH/ACK
-                if (0 >= max - (p + l) && fin) {
-                    //if(fin)
+                if (0 >= max - (p + l)) {
                     flg = 0x19; // FIN/PSH/ACK
                 }
 
@@ -157,6 +161,7 @@ namespace HideAndSeek {
         void Log(string msg) {
             _log.Set(string.Format("[{0}] {1}", _recvPacket.Port[(int)Sd.Src], msg));
         }
+
         void Send(byte flg,byte[] data) {
             var sendPacket = new SendPacket(_log, _recvPacket, ident++, squence, ack, flg,data);
             WinPcap.Send(sendPacket.Buf);

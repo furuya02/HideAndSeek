@@ -225,7 +225,6 @@ namespace HideAndSeek {
 
             //ドキュメントルートからフルパスを取得
             var path = string.Format("{0}{1}", documentRoot, fileName);
-            //path = path.Replace('/', '\\');
 
             _log.Set(path);
 
@@ -248,24 +247,21 @@ namespace HideAndSeek {
                 sb.Append("Connection: close\r\n");
                 sb.Append("\r\n");
                 var header = Encoding.ASCII.GetBytes(sb.ToString());
-
-                session.Write(header, 0, header.Length,false);
                 var file = File.ReadAllBytes(path);
-                session.Write(file, 0, file.Length,true);
                 
+                var buf = new byte[ header.Length + info.Length ];
+                Buffer.BlockCopy(header, 0, buf, 0, header.Length);
+                Buffer.BlockCopy(file, 0, buf, header.Length, file.Length);
+
+                session.Write(buf, 0, buf.Length);
                 
-                //var buf = new byte[header.Length+info.Length];
-                //Buffer.BlockCopy(header,0,buf,0,header.Length);
-                //var file = File.ReadAllBytes(path);
-                //Buffer.BlockCopy(file,0,buf,header.Length,file.Length);
-                //session.Write(buf, 0, buf.Length);
 
             } else {
                 var sb = new StringBuilder();
                 sb.Append("HTTP/1.1 404 Not Found\r\n");
                 sb.Append("\r\n");
                 var buf = Encoding.ASCII.GetBytes(sb.ToString());
-                session.Write(buf, 0, buf.Length,true);
+                session.Write(buf, 0, buf.Length);
             }
         }
     }
