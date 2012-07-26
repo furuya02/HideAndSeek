@@ -23,7 +23,7 @@ namespace HideAndSeek {
             _log = new Log(listBoxLog);
             _captureView = new CaptureView(listViewCapture);
             
-            InitializeWebServer(_option.RunMode);
+            InitializeWebServer();
         }
 
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e) {
@@ -40,17 +40,17 @@ namespace HideAndSeek {
             Close();
         }
 
-        void InitializeWebServer(RunMode mode) {
+        void InitializeWebServer() {
             if(_webServer!=null)
                 _webServer.Dispose();
-            _webServer = new WebServer(_port, _log, _captureView,mode);
+            _webServer = new WebServer(_port, _log, _captureView,_option);
         }
 
         private void MainMenuOption_Click(object sender, EventArgs e) {
             var dlg = new OptionDlg(_option);
             if (DialogResult.OK == dlg.ShowDialog()) {
                 _option = dlg.Option;
-                InitializeWebServer(_option.RunMode);
+                InitializeWebServer();
             }
         }
     }

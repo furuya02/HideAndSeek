@@ -22,7 +22,7 @@ namespace HideAndSeek {
 
             checkBoxAckReply.Checked = option.AckReply;
             var sb = new StringBuilder();
-            foreach(var ip in option.IpList){
+            foreach(var ip in option.ArpReplyList){
                 sb.Append(ip);
                 sb.Append("\n");
             }
@@ -38,11 +38,10 @@ namespace HideAndSeek {
                 Option.RunMode = RunMode.Pcap;
 
             Option.AckReply = checkBoxAckReply.Checked;
-            Option.IpList = new List<string>();
+            Option.ArpReplyList = new List<string>();
 
-            var lines = textBox1.Text.Split('\n');
-            foreach (var l in lines) {
-                Option.IpList.Add(l);
+            foreach (var l in textBox1.Text.Split('\n')) {
+                Option.ArpReplyList.Add(l);
             }
 
         }

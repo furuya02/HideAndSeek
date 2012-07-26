@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Adapter.cs" />
+    <Compile Include="ArpReplyPacket.cs" />
     <Compile Include="Capture.cs" />
     <Compile Include="CaptureView.cs" />
     <Compile Include="Log.cs" />

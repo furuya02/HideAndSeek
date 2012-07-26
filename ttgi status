@@ -1,0 +1,236 @@
+[1mdiff --git a/HideAndSeek/HideAndSeek.csproj b/HideAndSeek/HideAndSeek.csproj[m
+[1mindex bfca819..53b3526 100644[m
+[1m--- a/HideAndSeek/HideAndSeek.csproj[m
+[1m+++ b/HideAndSeek/HideAndSeek.csproj[m
+[36m@@ -45,6 +45,7 @@[m
+   </ItemGroup>[m
+   <ItemGroup>[m
+     <Compile Include="Adapter.cs" />[m
+[32m+[m[32m    <Compile Include="ArpReplyPacket.cs" />[m[41m[m
+     <Compile Include="Capture.cs" />[m
+     <Compile Include="CaptureView.cs" />[m
+     <Compile Include="Log.cs" />[m
+[1mdiff --git a/HideAndSeek/MainForm.cs b/HideAndSeek/MainForm.cs[m
+[1mindex 5729f69..b2d9136 100644[m
+[1m--- a/HideAndSeek/MainForm.cs[m
+[1m+++ b/HideAndSeek/MainForm.cs[m
+[36m@@ -23,7 +23,7 @@[m [mnamespace HideAndSeek {[m
+             _log = new Log(listBoxLog);[m
+             _captureView = new CaptureView(listViewCapture);[m
+             [m
+[31m-            InitializeWebServer(_option.RunMode);[m
+[32m+[m[32m            InitializeWebServer();[m[41m[m
+         }[m
+ [m
+         private void MainForm_FormClosed(object sender, FormClosedEventArgs e) {[m
+[36m@@ -40,17 +40,17 @@[m [mnamespace HideAndSeek {[m
+             Close();[m
+         }[m
+ [m
+[31m-        void InitializeWebServer(RunMode mode) {[m
+[32m+[m[32m        void InitializeWebServer() {[m[41m[m
+             if(_webServer!=null)[m
+                 _webServer.Dispose();[m
+[31m-            _webServer = new WebServer(_port, _log, _captureView,mode);[m
+[32m+[m[32m            _webServer = new WebServer(_port, _log, _captureView,_option);[m[41m[m
+         }[m
+ [m
+         private void MainMenuOption_Click(object sender, EventArgs e) {[m
+             var dlg = new OptionDlg(_option);[m
+             if (DialogResult.OK == dlg.ShowDialog()) {[m
+                 _option = dlg.Option;[m
+[31m-                InitializeWebServer(_option.RunMode);[m
+[32m+[m[32m                InitializeWebServer();[m[41m[m
+             }[m
+         }[m
+     }[m
+[1mdiff --git a/HideAndSeek/Option.cs b/HideAndSeek/Option.cs[m
+[1mindex fb2b398..21241f8 100644[m
+[1m--- a/HideAndSeek/Option.cs[m
+[1m+++ b/HideAndSeek/Option.cs[m
+[36m@@ -8,14 +8,14 @@[m [mnamespace HideAndSeek {[m
+     public class Option {[m
+         public RunMode RunMode { get; set; }[m
+         public bool AckReply { get; set; }[m
+[31m-        public List<string> IpList { get; set; }[m
+[32m+[m[32m        public List<string> ArpReplyList { get; set; }[m[41m[m
+         public Option() {[m
+             RunMode = RunMode.Bind;[m
+             AckReply = false;[m
+[31m-            IpList = new List<string>();[m
+[32m+[m[32m            ArpReplyList = new List<string>();[m[41m[m
+             //100..200[m
+             for (int i = 0; i <= 100; i++) {[m
+[31m-                IpList.Add(string.Format("192.168.64.{0}",i+100));[m
+[32m+[m[32m                ArpReplyList.Add(string.Format("192.168.64.{0}",i+100));[m[41m[m
+             }[m
+         }[m
+     }[m
+[1mdiff --git a/HideAndSeek/OptionDlg.cs b/HideAndSeek/OptionDlg.cs[m
+[1mindex 2ac6463..358f5dc 100644[m
+[1m--- a/HideAndSeek/OptionDlg.cs[m
+[1m+++ b/HideAndSeek/OptionDlg.cs[m
+[36m@@ -22,7 +22,7 @@[m [mnamespace HideAndSeek {[m
+ [m
+             checkBoxAckReply.Checked = option.AckReply;[m
+             var sb = new StringBuilder();[m
+[31m-            foreach(var ip in option.IpList){[m
+[32m+[m[32m            foreach(var ip in option.ArpReplyList){[m[41m[m
+                 sb.Append(ip);[m
+                 sb.Append("\n");[m
+             }[m
+[36m@@ -38,11 +38,10 @@[m [mnamespace HideAndSeek {[m
+                 Option.RunMode = RunMode.Pcap;[m
+ [m
+             Option.AckReply = checkBoxAckReply.Checked;[m
+[31m-            Option.IpList = new List<string>();[m
+[32m+[m[32m            Option.ArpReplyList = new List<string>();[m[41m[m
+ [m
+[31m-            var lines = textBox1.Text.Split('\n');[m
+[31m-            foreach (var l in lines) {[m
+[31m-                Option.IpList.Add(l);[m
+[32m+[m[32m            foreach (var l in textBox1.Text.Split('\n')) {[m[41m[m
+[32m+[m[32m                Option.ArpReplyList.Add(l);[m[41m[m
+             }[m
+ [m
+         }[m
+[1mdiff --git a/HideAndSeek/RecvPacket.cs b/HideAndSeek/RecvPacket.cs[m
+[1mindex 5fd82e5..4549c89 100644[m
+[1m--- a/HideAndSeek/RecvPacket.cs[m
+[1m+++ b/HideAndSeek/RecvPacket.cs[m
+[36m@@ -28,12 +28,14 @@[m [mnamespace HideAndSeek {[m
+         public byte Flg { get; private set; }[m
+         public byte [] Data { get; private set; }[m
+ [m
+[32m+[m[32m        public ArpHeader arpHeader { get; private set; }[m[41m[m
+ [m
+         public RecvPacket(byte [] b){[m
+             [m
+             etherHeader = new EtherHeader();[m
+             ipHeader = new IpHeader();[m
+             tcpHeader = new TcpHeader();[m
+[32m+[m[32m            arpHeader = new ArpHeader();[m[41m[m
+ [m
+             Mac = new List<byte[]> { null,null};[m
+             Ip = new List<byte[]> { null, null };[m
+[36m@@ -116,7 +118,12 @@[m [mnamespace HideAndSeek {[m
+                             Flg = tcpHeader.flg;[m
+                         }[m
+                     } else if (Type == PType.ARP) { //ARP[m
+[31m-                        return; // 未対応[m
+[32m+[m[32m                        // Arpヘッダ処理[m[41m[m
+[32m+[m[32m                        int arpHeaderSize = Marshal.SizeOf(arpHeader);[m[41m[m
+[32m+[m[32m                        if (offSet + etherHeaderSize > b.Length) //  受信バイト数超過[m[41m[m
+[32m+[m[32m                            return;[m[41m[m
+[32m+[m[32m                        arpHeader = (ArpHeader)Marshal.PtrToStructure((IntPtr)(p + offSet), typeof(ArpHeader));[m[41m[m
+[32m+[m[32m                        return;[m[41m[m
+                     } else {[m
+                         return; // 未対応[m
+                     }[m
+[1mdiff --git a/HideAndSeek/Substitute.cs b/HideAndSeek/Substitute.cs[m
+[1mindex b7e9b6c..72b1cc9 100644[m
+[1m--- a/HideAndSeek/Substitute.cs[m
+[1m+++ b/HideAndSeek/Substitute.cs[m
+[36m@@ -8,30 +8,58 @@[m [mnamespace HideAndSeek {[m
+         List<Session> _ar = new List<Session>();[m
+         int _port;[m
+         Log _log;[m
+[32m+[m[32m        bool _arpReplay;[m[41m[m
+[32m+[m[32m        List<string> _arpReplyList;[m[41m[m
+         public Adapter Adapter { set; private get; }[m
+ [m
+[31m-        public Substitute(Capture capture,int port,Log log) {[m
+[32m+[m[32m        public Substitute(Capture capture,int port,bool arpReply,List<string> arpReplyList,Log log) {[m[41m[m
+             _port = port;[m
+[32m+[m[32m            _arpReplay = arpReply;[m[41m[m
+[32m+[m[32m            _arpReplyList = arpReplyList;[m[41m[m
+             _log = log;[m
+             capture.OnCapture += new OnCaptureHandler(capture_OnCapture);[m
+         }[m
+ [m
+         void capture_OnCapture(RecvPacket recvPacket) {[m
+             lock (this) {[m
+[32m+[m[32m                //************************************************************[m[41m[m
+[32m+[m[32m                //ARPパケット処理[m[41m[m
+[32m+[m[32m                //************************************************************[m[41m[m
+[32m+[m[32m                if (_arpReplay) {//ARP応答処理[m[41m[m
+[32m+[m[32m                    if (recvPacket.Type == PType.ARP) {[m[41m[m
+[32m+[m[32m                        if (recvPacket.arpHeader.code == 0x0100) {//要求[m[41m[m
+[32m+[m[32m                            var ip = Util.Ip2Str(recvPacket.arpHeader.dstIp);[m[41m[m
+[32m+[m[32m                            foreach (var a in _arpReplyList) {[m[41m[m
+[32m+[m[32m                                if (ip == a) {[m[41m[m
+[32m+[m[32m                                    var replyMac = new byte[] { 1, 2, 3, 4, 5, 6 };[m[41m[m
+[32m+[m[32m                                    var arpReplyPacket = new ArpReplyPacket(_log, recvPacket, replyMac);[m[41m[m
+ [m
+[31m-                //対象ポート以外のパケットは処理しない[m
+[31m-                if (recvPacket.Port[(int)Sd.Dst] != _port)[m
+[31m-                    return;[m
+[31m-[m
+[31m-                //自分あてのパケット以外は処理しない[m
+[31m-                bool hit = false;[m
+[31m-                foreach (var ip in Adapter.Ip) {[m
+[31m-                    if (Util.Ip2Str(recvPacket.Ip[(int)Sd.Dst]) == ip) {[m
+[31m-                        hit = true;[m
+[31m-                        break;[m
+[32m+[m[32m                                    WinPcap.Send(arpReplyPacket.Buf);[m[41m[m
+[32m+[m[32m                                    _log.Set(string.Format("ARP Replay {0}", Util.Ip2Str(recvPacket.arpHeader.dstIp)));[m[41m[m
+[32m+[m[32m                                }[m[41m[m
+[32m+[m[32m                            }[m[41m[m
+[32m+[m[32m                        }[m[41m[m
+                     }[m
+[32m+[m[41m[m
+[32m+[m[41m[m
+[32m+[m[41m                [m
+[32m+[m[41m                [m
+[32m+[m[41m                [m
+                 }[m
+[31m-                if (!hit)[m
+[32m+[m[32m                //************************************************************[m[41m[m
+[32m+[m[32m                //TCPパケット処理[m[41m[m
+[32m+[m[32m                //************************************************************[m[41m[m
+[32m+[m[32m                //宛先MAC確認(Etherヘッダ)[m[41m[m
+[32m+[m[32m                var mac = Util.Mac2Str(recvPacket.Mac[(int)Sd.Dst]);[m[41m[m
+[32m+[m[32m                if (mac.ToUpper() != Adapter.Mac.ToUpper()) {[m[41m[m
+[32m+[m[32m                    return;[m[41m[m
+[32m+[m[32m                }[m[41m[m
+[32m+[m[32m                //プロトコル確認(IPヘッダ)[m[41m[m
+[32m+[m[32m                if (recvPacket.ipHeader.protocol != 0x06) {[m[41m[m
+[32m+[m[32m                    return;[m[41m[m
+[32m+[m[32m                }[m[41m[m
+[32m+[m[32m                //ポート番号確認(TCPヘッダ)[m[41m[m
+[32m+[m[32m                if (recvPacket.Port[(int)Sd.Dst] != _port)[m[41m[m
+                     return;[m
+ [m
+ [m
+[1mdiff --git a/HideAndSeek/WebServer.cs b/HideAndSeek/WebServer.cs[m
+[1mindex bee9811..bd20e30 100644[m
+[1m--- a/HideAndSeek/WebServer.cs[m
+[1m+++ b/HideAndSeek/WebServer.cs[m
+[36m@@ -24,23 +24,23 @@[m [mnamespace HideAndSeek {[m
+         RunMode _runMode;[m
+         CaptureView _captureView;[m
+ [m
+[31m-        public WebServer(int port, Log log, CaptureView captureView,RunMode mode) {[m
+[32m+[m[32m        public WebServer(int port, Log log, CaptureView captureView,Option option) {[m[41m[m
+             _log = log;[m
+             _port = port;[m
+[31m-            _runMode = mode;[m
+[32m+[m[32m            _runMode = option.RunMode;[m[41m[m
+             _captureView = captureView;[m
+ [m
+             _documentRoot = Path.GetFullPath(Directory.GetCurrentDirectory() + "\\..\\..\\..\\www");[m
+ [m
+             _log.Clear();[m
+[31m-            log.Set(string.Format("Mode={0}",mode));[m
+[32m+[m[32m            log.Set(string.Format("Mode={0}",_runMode));[m[41m[m
+ [m
+             _t = new Thread(Loop) { IsBackground = true };[m
+             if (_runMode == RunMode.Bind) {[m
+                 _captureView.Enable= false;[m
+             } else {[m
+                 _capture = new Capture();[m
+[31m-                _substitute = new Substitute(_capture, port, _log);[m
+[32m+[m[32m                _substitute = new Substitute(_capture, _port,option.AckReply,option.ArpReplyList, _log);[m[41m[m
+ [m
+                 _capture.OnCapture += new OnCaptureHandler(_capture_OnCapture);[m
+                 _captureView.Enable = true;[m

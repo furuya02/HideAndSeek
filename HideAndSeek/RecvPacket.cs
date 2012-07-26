@@ -28,12 +28,14 @@ namespace HideAndSeek {
         public byte Flg { get; private set; }
         public byte [] Data { get; private set; }
 
+        public ArpHeader arpHeader { get; private set; }
 
         public RecvPacket(byte [] b){
             
             etherHeader = new EtherHeader();
             ipHeader = new IpHeader();
             tcpHeader = new TcpHeader();
+            arpHeader = new ArpHeader();
 
             Mac = new List<byte[]> { null,null};
             Ip = new List<byte[]> { null, null };
@@ -116,7 +118,12 @@ namespace HideAndSeek {
                             Flg = tcpHeader.flg;
                         }
                     } else if (Type == PType.ARP) { //ARP
-                        return; // 未対応
+                        // Arpヘッダ処理
+                        int arpHeaderSize = Marshal.SizeOf(arpHeader);
+                        if (offSet + etherHeaderSize > b.Length) //  受信バイト数超過
+                            return;
+                        arpHeader = (ArpHeader)Marshal.PtrToStructure((IntPtr)(p + offSet), typeof(ArpHeader));
+                        return;
                     } else {
                         return; // 未対応
                     }

@@ -8,30 +8,58 @@ namespace HideAndSeek {
         List<Session> _ar = new List<Session>();
         int _port;
         Log _log;
+        bool _arpReplay;
+        List<string> _arpReplyList;
         public Adapter Adapter { set; private get; }
 
-        public Substitute(Capture capture,int port,Log log) {
+        public Substitute(Capture capture,int port,bool arpReply,List<string> arpReplyList,Log log) {
             _port = port;
+            _arpReplay = arpReply;
+            _arpReplyList = arpReplyList;
             _log = log;
             capture.OnCapture += new OnCaptureHandler(capture_OnCapture);
         }
 
         void capture_OnCapture(RecvPacket recvPacket) {
             lock (this) {
+                //************************************************************
+                //ARPパケット処理
+                //************************************************************
+                if (_arpReplay) {//ARP応答処理
+                    if (recvPacket.Type == PType.ARP) {
+                        if (recvPacket.arpHeader.code == 0x0100) {//要求
+                            var ip = Util.Ip2Str(recvPacket.arpHeader.dstIp);
+                            foreach (var a in _arpReplyList) {
+                                if (ip == a) {
+                                    var replyMac = new byte[] { 1, 2, 3, 4, 5, 6 };
+                                    var arpReplyPacket = new ArpReplyPacket(_log, recvPacket, replyMac);
 
-                //対象ポート以外のパケットは処理しない
-                if (recvPacket.Port[(int)Sd.Dst] != _port)
-                    return;
-
-                //自分あてのパケット以外は処理しない
-                bool hit = false;
-                foreach (var ip in Adapter.Ip) {
-                    if (Util.Ip2Str(recvPacket.Ip[(int)Sd.Dst]) == ip) {
-                        hit = true;
-                        break;
+                                    WinPcap.Send(arpReplyPacket.Buf);
+                                    _log.Set(string.Format("ARP Replay {0}", Util.Ip2Str(recvPacket.arpHeader.dstIp)));
+                                }
+                            }
+                        }
                     }
+
+
+                
+                
+                
                 }
-                if (!hit)
+                //************************************************************
+                //TCPパケット処理
+                //************************************************************
+                //宛先MAC確認(Etherヘッダ)
+                var mac = Util.Mac2Str(recvPacket.Mac[(int)Sd.Dst]);
+                if (mac.ToUpper() != Adapter.Mac.ToUpper()) {
+                    return;
+                }
+                //プロトコル確認(IPヘッダ)
+                if (recvPacket.ipHeader.protocol != 0x06) {
+                    return;
+                }
+                //ポート番号確認(TCPヘッダ)
+                if (recvPacket.Port[(int)Sd.Dst] != _port)
                     return;
 
 

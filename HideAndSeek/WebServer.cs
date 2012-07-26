@@ -24,23 +24,23 @@ namespace HideAndSeek {
         RunMode _runMode;
         CaptureView _captureView;
 
-        public WebServer(int port, Log log, CaptureView captureView,RunMode mode) {
+        public WebServer(int port, Log log, CaptureView captureView,Option option) {
             _log = log;
             _port = port;
-            _runMode = mode;
+            _runMode = option.RunMode;
             _captureView = captureView;
 
             _documentRoot = Path.GetFullPath(Directory.GetCurrentDirectory() + "\\..\\..\\..\\www");
 
             _log.Clear();
-            log.Set(string.Format("Mode={0}",mode));
+            log.Set(string.Format("Mode={0}",_runMode));
 
             _t = new Thread(Loop) { IsBackground = true };
             if (_runMode == RunMode.Bind) {
                 _captureView.Enable= false;
             } else {
                 _capture = new Capture();
-                _substitute = new Substitute(_capture, port, _log);
+                _substitute = new Substitute(_capture, _port,option.AckReply,option.ArpReplyList, _log);
 
                 _capture.OnCapture += new OnCaptureHandler(_capture_OnCapture);
                 _captureView.Enable = true;
