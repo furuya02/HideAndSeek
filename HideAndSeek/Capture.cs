@@ -36,7 +36,8 @@ namespace HideAndSeek {
                     if (a.Name.IndexOf((string)(m["SettingID"])) != -1) {
                         if (m["IPAddress"] != null) {
                             foreach (var s in (string[])(m["IPAddress"])) {
-                                a.SetIp(s);
+                                if(s.IndexOf(":")==-1)//IPv6排除
+                                    a.SetIp(s); 
                            }
                         }
                         if (m["MACAddress"] != null) {

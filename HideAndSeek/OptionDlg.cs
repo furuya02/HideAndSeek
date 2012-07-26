@@ -28,6 +28,11 @@ namespace HideAndSeek {
             }
             textBox1.Text = sb.ToString();
 
+            foreach (var a in option.AdapterList) {
+                listBoxAdapter.Items.Add(a);
+            }
+            listBoxAdapter.SelectedIndex = option.AdapterIndex;
+
             initDisplay();
         }
 
@@ -43,6 +48,7 @@ namespace HideAndSeek {
             foreach (var l in textBox1.Text.Split('\n')) {
                 Option.ArpReplyList.Add(l);
             }
+            Option.AdapterIndex = listBoxAdapter.SelectedIndex;
 
         }
 
@@ -51,8 +57,10 @@ namespace HideAndSeek {
         }
 
         void initDisplay() {
+            listBoxAdapter.Enabled = radioButtonPcap.Checked;
             checkBoxAckReply.Enabled = radioButtonPcap.Checked;
             textBox1.Enabled = (radioButtonPcap.Checked && checkBoxAckReply.Checked);
+
         }
 
     }

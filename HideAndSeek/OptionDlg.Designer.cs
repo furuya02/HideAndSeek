@@ -29,12 +29,13 @@
             this.radioButtonPcap = new System.Windows.Forms.RadioButton();
             this.checkBoxAckReply = new System.Windows.Forms.CheckBox();
             this.textBox1 = new System.Windows.Forms.TextBox();
+            this.listBoxAdapter = new System.Windows.Forms.ListBox();
             this.SuspendLayout();
             // 
             // buttonOk
             // 
             this.buttonOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.buttonOk.Location = new System.Drawing.Point(12, 182);
+            this.buttonOk.Location = new System.Drawing.Point(12, 241);
             this.buttonOk.Name = "buttonOk";
             this.buttonOk.Size = new System.Drawing.Size(75, 23);
             this.buttonOk.TabIndex = 0;
@@ -45,7 +46,7 @@
             // buttonCancel
             // 
             this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.buttonCancel.Location = new System.Drawing.Point(93, 182);
+            this.buttonCancel.Location = new System.Drawing.Point(93, 241);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 23);
             this.buttonCancel.TabIndex = 1;
@@ -68,7 +69,7 @@
             // radioButtonPcap
             // 
             this.radioButtonPcap.AutoSize = true;
-            this.radioButtonPcap.Location = new System.Drawing.Point(21, 42);
+            this.radioButtonPcap.Location = new System.Drawing.Point(73, 20);
             this.radioButtonPcap.Name = "radioButtonPcap";
             this.radioButtonPcap.Size = new System.Drawing.Size(48, 16);
             this.radioButtonPcap.TabIndex = 9;
@@ -79,7 +80,7 @@
             // checkBoxAckReply
             // 
             this.checkBoxAckReply.AutoSize = true;
-            this.checkBoxAckReply.Location = new System.Drawing.Point(128, 20);
+            this.checkBoxAckReply.Location = new System.Drawing.Point(21, 54);
             this.checkBoxAckReply.Name = "checkBoxAckReply";
             this.checkBoxAckReply.Size = new System.Drawing.Size(86, 16);
             this.checkBoxAckReply.TabIndex = 10;
@@ -89,18 +90,28 @@
             // 
             // textBox1
             // 
-            this.textBox1.Location = new System.Drawing.Point(128, 42);
+            this.textBox1.Location = new System.Drawing.Point(113, 54);
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
             this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBox1.Size = new System.Drawing.Size(133, 123);
+            this.textBox1.Size = new System.Drawing.Size(133, 89);
             this.textBox1.TabIndex = 11;
+            // 
+            // listBoxAdapter
+            // 
+            this.listBoxAdapter.FormattingEnabled = true;
+            this.listBoxAdapter.ItemHeight = 12;
+            this.listBoxAdapter.Location = new System.Drawing.Point(12, 159);
+            this.listBoxAdapter.Name = "listBoxAdapter";
+            this.listBoxAdapter.Size = new System.Drawing.Size(488, 76);
+            this.listBoxAdapter.TabIndex = 12;
             // 
             // OptionDlg
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(273, 213);
+            this.ClientSize = new System.Drawing.Size(512, 276);
+            this.Controls.Add(this.listBoxAdapter);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.checkBoxAckReply);
             this.Controls.Add(this.radioButtonPcap);
@@ -126,5 +137,6 @@
         private System.Windows.Forms.RadioButton radioButtonPcap;
         private System.Windows.Forms.CheckBox checkBoxAckReply;
         private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.ListBox listBoxAdapter;
     }
 }

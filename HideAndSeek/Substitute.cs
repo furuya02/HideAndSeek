@@ -12,6 +12,8 @@ namespace HideAndSeek {
         List<string> _arpReplyList;
         public Adapter Adapter { set; private get; }
 
+        byte[] _myMac = new byte[]{0,1,2,3,4,5,6};
+
         public Substitute(Capture capture,int port,bool arpReply,List<string> arpReplyList,Log log) {
             _port = port;
             _arpReplay = arpReply;
@@ -31,28 +33,25 @@ namespace HideAndSeek {
                             var ip = Util.Ip2Str(recvPacket.arpHeader.dstIp);
                             foreach (var a in _arpReplyList) {
                                 if (ip == a) {
-                                    var replyMac = new byte[] { 1, 2, 3, 4, 5, 6 };
-                                    var arpReplyPacket = new ArpReplyPacket(_log, recvPacket, replyMac);
+                                    var arpReplyPacket = new ArpReplyPacket(_log, recvPacket, _myMac);
 
                                     WinPcap.Send(arpReplyPacket.Buf);
                                     _log.Set(string.Format("ARP Replay {0}", Util.Ip2Str(recvPacket.arpHeader.dstIp)));
+                                    return;
                                 }
                             }
                         }
                     }
-
-
-                
-                
-                
                 }
                 //************************************************************
                 //TCPパケット処理
                 //************************************************************
                 //宛先MAC確認(Etherヘッダ)
                 var mac = Util.Mac2Str(recvPacket.Mac[(int)Sd.Dst]);
-                if (mac.ToUpper() != Adapter.Mac.ToUpper()) {
-                    return;
+                if (mac.ToUpper() != Util.Mac2Str(_myMac)) {
+                    if (mac.ToUpper() != Adapter.Mac.ToUpper()) {
+                        return;
+                    }
                 }
                 //プロトコル確認(IPヘッダ)
                 if (recvPacket.ipHeader.protocol != 0x06) {
@@ -66,9 +65,6 @@ namespace HideAndSeek {
                 if (recvPacket.Flg == 0x02) {//SYNパケット到着
                     //新しいセッションの開始
                     _ar.Add(new Session(recvPacket, _log));
-
-                    //SYN/ACKの送信
-
 
                 } else {//それ以外のパケット
                     //当該セッションに追加
@@ -102,9 +98,5 @@ namespace HideAndSeek {
                 return null;
             }
         }
-        public void Stop() {
-        
-        }
-
     }
 }
