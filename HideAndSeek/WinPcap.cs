@@ -71,8 +71,8 @@ namespace HideAndSeek {
              int size);
 
 
-        static Thread t;
-        static IntPtr handle;
+        static Thread _t;
+        static IntPtr _handle;
         // デリゲート
         public delegate void OnRecvHandler(IntPtr pkt_hdr, IntPtr pkt_data);
         //イベント
@@ -82,7 +82,7 @@ namespace HideAndSeek {
             IntPtr pkt_data = new IntPtr();
             IntPtr pkt_hdr = new IntPtr();
             while (true) {
-                int res = pcap_next_ex(handle, ref pkt_hdr, ref pkt_data);//データ取得
+                int res = pcap_next_ex(_handle, ref pkt_hdr, ref pkt_data);//データ取得
                 if (res < 0) { //res==0の場合、受信パケット0でタイムアウト
                     // ERROR!!;
                 } else if (res > 0) {
@@ -122,24 +122,24 @@ namespace HideAndSeek {
             short timeout = 20;
             short Promiscast = (short)(promiscuous ? 1 : 0);
             StringBuilder errbuf = new StringBuilder(PCAP_ERRBUF_SIZE);
-            handle = pcap_open(deviceName, MAX_RECV_SIZE, Promiscast, timeout,errbuf);
-            if (handle.Equals(IntPtr.Zero)) {
+            _handle = pcap_open(deviceName, MAX_RECV_SIZE, Promiscast, timeout,errbuf);
+            if (_handle.Equals(IntPtr.Zero)) {
                 // エラー (エラーの詳細は、errbufに格納されている)
                 return false;
             }
-            t = new Thread(new ThreadStart(Loop));
-            t.IsBackground = true;
-            t.Start();
+            _t = new Thread(new ThreadStart(Loop));
+            _t.IsBackground = true;
+            _t.Start();
             return true;
         }
         // キャプチャー終了
         public static bool Stop() {
-            if(t!=null)
-                t.Abort();
-            t = null;
-            if (handle != IntPtr.Zero) {
+            if(_t!=null)
+                _t.Abort();
+            _t = null;
+            if (_handle != IntPtr.Zero) {
                 try {
-                    pcap_close(handle);//キャプチャ終了
+                    pcap_close(_handle);//キャプチャ終了
                 } catch {
                 
                 }
@@ -152,7 +152,7 @@ namespace HideAndSeek {
                 unsafe {
                     fixed (byte* p = buf) {
                         IntPtr ptr = (IntPtr)p;
-                        int ret = pcap_sendpacket(handle, ptr, buf.Length);
+                        int ret = pcap_sendpacket(_handle, ptr, buf.Length);
                     }
                 }
                 return true;

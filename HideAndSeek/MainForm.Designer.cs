@@ -25,12 +25,9 @@
         private void InitializeComponent() {
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.MainMenuFile = new System.Windows.Forms.ToolStripMenuItem();
-            this.MainMenuClear = new System.Windows.Forms.ToolStripMenuItem();
+            this.MainMenuLogClear = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
             this.MainMenuExit = new System.Windows.Forms.ToolStripMenuItem();
-            this.MainMenuMode = new System.Windows.Forms.ToolStripMenuItem();
-            this.MainMenuModeBind = new System.Windows.Forms.ToolStripMenuItem();
-            this.MainMenuModePcap = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.listBoxLog = new System.Windows.Forms.ListBox();
@@ -47,6 +44,7 @@
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.MainMenuOption = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -58,8 +56,7 @@
             // 
             this.menuStrip.Font = new System.Drawing.Font("メイリオ", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.MainMenuFile,
-            this.MainMenuMode});
+            this.MainMenuFile});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
             this.menuStrip.Size = new System.Drawing.Size(1031, 26);
@@ -69,7 +66,8 @@
             // MainMenuFile
             // 
             this.MainMenuFile.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.MainMenuClear,
+            this.MainMenuOption,
+            this.MainMenuLogClear,
             this.toolStripMenuItem2,
             this.MainMenuExit});
             this.MainMenuFile.Font = new System.Drawing.Font("メイリオ", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
@@ -77,49 +75,24 @@
             this.MainMenuFile.Size = new System.Drawing.Size(85, 22);
             this.MainMenuFile.Text = "ファイル(&F)";
             // 
-            // MainMenuClear
+            // MainMenuLogClear
             // 
-            this.MainMenuClear.Name = "MainMenuClear";
-            this.MainMenuClear.Size = new System.Drawing.Size(130, 22);
-            this.MainMenuClear.Text = "クリア(&C)";
-            this.MainMenuClear.Click += new System.EventHandler(this.MainMenuClear_Click);
+            this.MainMenuLogClear.Name = "MainMenuLogClear";
+            this.MainMenuLogClear.Size = new System.Drawing.Size(155, 22);
+            this.MainMenuLogClear.Text = "ログ削除(&C)";
+            this.MainMenuLogClear.Click += new System.EventHandler(this.MainMenuClear_Click);
             // 
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(127, 6);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(152, 6);
             // 
             // MainMenuExit
             // 
             this.MainMenuExit.Name = "MainMenuExit";
-            this.MainMenuExit.Size = new System.Drawing.Size(130, 22);
+            this.MainMenuExit.Size = new System.Drawing.Size(155, 22);
             this.MainMenuExit.Text = "終了(&X)";
             this.MainMenuExit.Click += new System.EventHandler(this.MainMenuExit_Click);
-            // 
-            // MainMenuMode
-            // 
-            this.MainMenuMode.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.MainMenuModeBind,
-            this.MainMenuModePcap});
-            this.MainMenuMode.Name = "MainMenuMode";
-            this.MainMenuMode.Size = new System.Drawing.Size(72, 22);
-            this.MainMenuMode.Text = "モード(&M)";
-            // 
-            // MainMenuModeBind
-            // 
-            this.MainMenuModeBind.Checked = true;
-            this.MainMenuModeBind.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.MainMenuModeBind.Name = "MainMenuModeBind";
-            this.MainMenuModeBind.Size = new System.Drawing.Size(152, 22);
-            this.MainMenuModeBind.Text = "Bind";
-            this.MainMenuModeBind.Click += new System.EventHandler(this.MainMenuModeBind_Click);
-            // 
-            // MainMenuModePcap
-            // 
-            this.MainMenuModePcap.Name = "MainMenuModePcap";
-            this.MainMenuModePcap.Size = new System.Drawing.Size(152, 22);
-            this.MainMenuModePcap.Text = "Pcap";
-            this.MainMenuModePcap.Click += new System.EventHandler(this.MainMenuModePcap_Click);
             // 
             // statusStrip
             // 
@@ -241,6 +214,13 @@
             this.columnHeader3.Text = "フラグ";
             this.columnHeader3.Width = 131;
             // 
+            // MainMenuOption
+            // 
+            this.MainMenuOption.Name = "MainMenuOption";
+            this.MainMenuOption.Size = new System.Drawing.Size(155, 22);
+            this.MainMenuOption.Text = "オプション(&O)";
+            this.MainMenuOption.Click += new System.EventHandler(this.MainMenuOption_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -269,7 +249,7 @@
         private System.Windows.Forms.MenuStrip menuStrip;
         private System.Windows.Forms.ToolStripMenuItem MainMenuFile;
         private System.Windows.Forms.ToolStripMenuItem MainMenuExit;
-        private System.Windows.Forms.ToolStripMenuItem MainMenuClear;
+        private System.Windows.Forms.ToolStripMenuItem MainMenuLogClear;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
         private System.Windows.Forms.StatusStrip statusStrip;
         private System.Windows.Forms.SplitContainer splitContainer1;
@@ -287,9 +267,7 @@
         private System.Windows.Forms.ColumnHeader columnHeader1;
         private System.Windows.Forms.ColumnHeader columnHeader2;
         private System.Windows.Forms.ColumnHeader columnHeader3;
-        private System.Windows.Forms.ToolStripMenuItem MainMenuMode;
-        private System.Windows.Forms.ToolStripMenuItem MainMenuModeBind;
-        private System.Windows.Forms.ToolStripMenuItem MainMenuModePcap;
+        private System.Windows.Forms.ToolStripMenuItem MainMenuOption;
     }
 }
 

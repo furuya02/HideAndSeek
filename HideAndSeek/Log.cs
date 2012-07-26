@@ -6,22 +6,22 @@ using System.Windows.Forms;
 
 namespace HideAndSeek {
     class Log {
-        ListBox listBox;
+        ListBox _listBox;
         public Log(ListBox listBox) {
-            this.listBox = listBox;
+            this._listBox = listBox;
         }
 
         public void Set(string msg) {
-            if (listBox.InvokeRequired) {// 別スレッドから呼び出された場合
-                listBox.BeginInvoke(new MethodInvoker(() => Set(msg)));
+            if (_listBox.InvokeRequired) {// 別スレッドから呼び出された場合
+                _listBox.BeginInvoke(new MethodInvoker(() => Set(msg)));
             } else {
-                listBox.Items.Add(msg);
-                listBox.TopIndex = listBox.Items.Count - listBox.Height / listBox.ItemHeight;
+                _listBox.Items.Add(msg);
+                _listBox.TopIndex = _listBox.Items.Count - _listBox.Height / _listBox.ItemHeight;
             }
 
         }
         public void Clear() {
-            listBox.Items.Clear();
+            _listBox.Items.Clear();
         }
     }
 }

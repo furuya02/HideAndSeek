@@ -10,17 +10,15 @@ namespace HideAndSeek {
     class Session:Stream{
         Log _log;
         RecvPacket _recvPacket;
+        short _ident;
+        Random _rnd = new Random();
+        uint _squence;
+        uint _ack = 0;
+        byte[] _buffer = new byte[0];
+        
         public bool Life { get; private set; }
         public bool Accept { get; set; }
         
-        short ident;
-        Random rnd = new Random();
-        uint squence;
-        uint ack = 0;
-        bool CloseFlg = false;
-
-        byte[] buffer = new byte[0];
-
 
         public Session(RecvPacket recvPacket,Log log) {
             lock (this) {
@@ -31,14 +29,14 @@ namespace HideAndSeek {
                 _recvPacket = recvPacket;
                 _log = log;
 
-                ident = (short)rnd.Next(500);//生成
+                _ident = (short)_rnd.Next(500);//生成
 
                 //squenceは生成する
-                squence = (uint)rnd.Next(99999);
+                _squence = (uint)_rnd.Next(99999);
                 //相手のsquence+dataLen+(1)でackを初期化
-                ack = recvPacket.Squence + recvPacket.Len;
+                _ack = recvPacket.Squence + recvPacket.Len;
                 if (recvPacket.Len == 0)
-                    ack++;
+                    _ack++;
                 
                 Log(string.Format("Create ({0})", Util.Flg2Str(recvPacket.Flg)));
                 
@@ -46,14 +44,8 @@ namespace HideAndSeek {
             }
 
         }
-        public void Close() {
-            //this.Close();
-        }
         public bool Append(RecvPacket recvPacket) {
             if (!Life)
-                return false;
-
-            if (CloseFlg)//もう受け付けない
                 return false;
 
             lock (this) {
@@ -91,44 +83,44 @@ namespace HideAndSeek {
                         }
 
                         //既に受信されているバッファを退避
-                        var tmp = new byte[buffer.Length];
-                        Buffer.BlockCopy(buffer, 0, tmp, 0, buffer.Length);
+                        var tmp = new byte[_buffer.Length];
+                        Buffer.BlockCopy(_buffer, 0, tmp, 0, _buffer.Length);
 
-                        buffer = new byte[tmp.Length + recvPacket.Len];//新しいサイズを確保
-                        Buffer.BlockCopy(tmp, 0, buffer, 0, tmp.Length);//既存のデータを戻す
-                        Buffer.BlockCopy(recvPacket.Data, 0, buffer, tmp.Length, recvPacket.Len);//新しいデータを追加
+                        _buffer = new byte[tmp.Length + recvPacket.Len];//新しいサイズを確保
+                        Buffer.BlockCopy(tmp, 0, _buffer, 0, tmp.Length);//既存のデータを戻す
+                        Buffer.BlockCopy(recvPacket.Data, 0, _buffer, tmp.Length, recvPacket.Len);//新しいデータを追加
                     }
 
                     
                     //相手のackでsquenceを初期化する
-                    squence = recvPacket.Ack;
+                    _squence = recvPacket.Ack;
                     //相手のsquence+dataLen+1でackを初期化
-                    ack = recvPacket.Squence + recvPacket.Len;
+                    _ack = recvPacket.Squence + recvPacket.Len;
                     if (recvPacket.Len == 0)
-                        ack++;
+                        _ack++;
                 }
                 return true;
             }
         }
         
         override public int Read(byte[] buf, int offset,int max) {
-            if (buffer.Length == 0)
+            if (_buffer.Length == 0)
                 return 0;
             lock (this) {
-                int l = buffer.Length;
+                int l = _buffer.Length;
                 if(l>max){
                     l = max;
                 }
-                Buffer.BlockCopy(buffer,0,buf,offset,l);
+                Buffer.BlockCopy(_buffer,0,buf,offset,l);
                 
                 //送りきれなかったバイト数
-                var remains = buffer.Length-l;
+                var remains = _buffer.Length-l;
                 if(remains>0){
                     var tmp = new byte [remains]; 
-                    Buffer.BlockCopy(buffer,l,tmp,0,remains);
-                    buffer = tmp;
+                    Buffer.BlockCopy(_buffer,l,tmp,0,remains);
+                    _buffer = tmp;
                 }else{
-                    buffer = new byte[0];
+                    _buffer = new byte[0];
                 }
                 return l;
             }
@@ -157,11 +149,11 @@ namespace HideAndSeek {
         }
 
         void Send(byte flg,byte[] data) {
-            var sendPacket = new SendPacket(_log, _recvPacket, ident++, squence, ack, flg,data);
+            var sendPacket = new SendPacket(_log, _recvPacket, _ident++, _squence, _ack, flg,data);
             WinPcap.Send(sendPacket.Buf);
             Log(string.Format("Send {0} Len={1} {2}", Util.Flg2Str(flg), data.Length, Encoding.ASCII.GetString(data)));
 
-            squence += (uint)data.Length;
+            _squence += (uint)data.Length;
         }
 
         public override void SetLength(long value) {

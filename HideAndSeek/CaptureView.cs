@@ -8,10 +8,10 @@ using System.Drawing.Drawing2D;
 
 namespace HideAndSeek {
     class CaptureView {
-        ListView listView;
+        ListView _listView;
 
         public CaptureView(ListView listView) {
-            this.listView = listView;
+            this._listView = listView;
 
             listView.OwnerDraw = true;
             listView.DrawSubItem+=new DrawListViewSubItemEventHandler(listView_DrawSubItem);
@@ -20,7 +20,7 @@ namespace HideAndSeek {
         }
         public bool Enable { 
             set{
-                listView.Enabled = value;
+                _listView.Enabled = value;
             }
         }
         public Adapter Adapter {set;private get;}
@@ -47,10 +47,10 @@ namespace HideAndSeek {
         }
         public void Set(RecvPacket p) {
 
-            if (listView.InvokeRequired) {// 別スレッドから呼び出された場合
-                listView.BeginInvoke(new MethodInvoker(() => Set(p)));
+            if (_listView.InvokeRequired) {// 別スレッドから呼び出された場合
+                _listView.BeginInvoke(new MethodInvoker(() => Set(p)));
             } else {
-                var item = listView.Items.Add(Util.Mac2Str(p.Mac[(int)Sd.Dst]));
+                var item = _listView.Items.Add(Util.Mac2Str(p.Mac[(int)Sd.Dst]));
                 item.SubItems.Add(Util.Mac2Str(p.Mac[(int)Sd.Src]));
                 item.SubItems.Add(p.Type.ToString());
                 item.SubItems.Add(p.Protocol.ToString());
@@ -65,18 +65,18 @@ namespace HideAndSeek {
                 item.Tag = Util.Mac2Str(p.Mac[(int)Sd.Dst]);
 
                 //自動スクロール
-                var rect = listView.ClientRectangle;//ListViewの高さ取得
-                var bounds = listView.Items[0].Bounds;//１行の高さ取得
+                var rect = _listView.ClientRectangle;//ListViewの高さ取得
+                var bounds = _listView.Items[0].Bounds;//１行の高さ取得
                 var row = rect.Height / bounds.Height;//表示されている行数取得
-                var top = listView.Items.Count - row;//１行目のItemIndex
-                if (listView.TopItem.Index == top) {
+                var top = _listView.Items.Count - row;//１行目のItemIndex
+                if (_listView.TopItem.Index == top) {
                     //最下行が表示されているので、自動スクロールする
-                    listView.EnsureVisible(listView.Items.Count - 1);
+                    _listView.EnsureVisible(_listView.Items.Count - 1);
                 }
             }
         }
         public void Clear() {
-            listView.Items.Clear();
+            _listView.Items.Clear();
         }
     }
 }

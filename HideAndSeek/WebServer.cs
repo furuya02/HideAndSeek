@@ -8,40 +8,35 @@ using System.IO;
 using System.Windows.Forms;
 
 namespace HideAndSeek {
-    enum Mode{
-        Bind=0,
-        Pcap=1,
+    public enum RunMode {
+        Bind = 0,
+        Pcap = 1,
     }
-
-
     class WebServer:IDisposable {
 
         Log _log;
-
         Thread _t = null;
         bool _life = true;
-
         int _port;
-        string documentRoot = Directory.GetCurrentDirectory();
-
+        string _documentRoot = Directory.GetCurrentDirectory();
         Substitute _substitute = null;
         Capture _capture = null;
-        Mode _mode;
+        RunMode _runMode;
         CaptureView _captureView;
 
-        public WebServer(int port, Log log, CaptureView captureView,Mode mode) {
+        public WebServer(int port, Log log, CaptureView captureView,RunMode mode) {
             _log = log;
             _port = port;
-            _mode = mode;
+            _runMode = mode;
             _captureView = captureView;
 
-            documentRoot = Path.GetFullPath(Directory.GetCurrentDirectory() + "\\..\\..\\..\\www");
+            _documentRoot = Path.GetFullPath(Directory.GetCurrentDirectory() + "\\..\\..\\..\\www");
 
             _log.Clear();
             log.Set(string.Format("Mode={0}",mode));
 
             _t = new Thread(Loop) { IsBackground = true };
-            if (_mode == Mode.Bind) {
+            if (_runMode == RunMode.Bind) {
                 _captureView.Enable= false;
             } else {
                 _capture = new Capture();
@@ -89,7 +84,7 @@ namespace HideAndSeek {
             }
             _t = null;
 
-            if (_mode == Mode.Pcap) {
+            if (_runMode == RunMode.Pcap) {
                 _capture.OnCapture -= _capture_OnCapture;
                 _capture.Dispose();
                 _capture = null;
@@ -98,7 +93,7 @@ namespace HideAndSeek {
         }
         void Loop() {
             TcpListener listener = null;
-            if (_mode == Mode.Bind) {
+            if (_runMode == RunMode.Bind) {
                 listener = new TcpListener(_port);
                 listener.Start();//待ち受け開始
             }
@@ -107,7 +102,7 @@ namespace HideAndSeek {
                 
                 Stream ns = null;
                 TcpClient tcp = null;
-                if (_mode == Mode.Bind) {
+                if (_runMode == RunMode.Bind) {
                     if (!listener.Pending()) {//接続が無い場合は、処理なし
                         Thread.Sleep(100);
                         continue;
@@ -166,7 +161,7 @@ namespace HideAndSeek {
             }
 
             //ドキュメントルートからフルパスを取得
-            var path = string.Format("{0}{1}", documentRoot, fileName);
+            var path = string.Format("{0}{1}", _documentRoot, fileName);
 
             _log.Set(path);
 
