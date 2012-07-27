@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 namespace HideAndSeek {
     class ArpReplyPacket {
         public byte[] Buf { get; private set; }
-        Log _log;
         public ArpReplyPacket(Log log,RecvPacket recvPacket,byte [] mac) {
 
             EtherHeader etherHeader = new EtherHeader();

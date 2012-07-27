@@ -28,6 +28,7 @@ namespace HideAndSeek {
 
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e) {
             _webServer.Dispose();
+            _option.Save();
         }
         
         //クリア

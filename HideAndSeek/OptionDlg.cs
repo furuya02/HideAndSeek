@@ -28,10 +28,22 @@ namespace HideAndSeek {
             }
             textBox1.Text = sb.ToString();
 
-            foreach (var a in option.AdapterList) {
-                listBoxAdapter.Items.Add(a);
+
+            Capture capture = new Capture();
+            var ar = capture.GetAdapterList();
+            foreach (var a in ar) {
+                sb = new StringBuilder();
+                sb.Append(a.Description);
+                sb.Append(" ");
+                foreach (var s in a.Ip) {
+                    sb.Append(s);
+                    sb.Append(" , ");
+                }
+                listBoxAdapter.Items.Add(sb.ToString());
             }
-            listBoxAdapter.SelectedIndex = option.AdapterIndex;
+            listBoxAdapter.SelectedIndex=0;
+            if (listBoxAdapter.Items.Count > option.AdapterIndex)
+                listBoxAdapter.SelectedIndex = option.AdapterIndex;
 
             initDisplay();
         }
@@ -45,8 +57,12 @@ namespace HideAndSeek {
             Option.AckReply = checkBoxAckReply.Checked;
             Option.ArpReplyList = new List<string>();
 
-            foreach (var l in textBox1.Text.Split('\n')) {
-                Option.ArpReplyList.Add(l);
+            var ipList = textBox1.Text.Split(new char[]{'\n','\r'},StringSplitOptions.RemoveEmptyEntries);
+            foreach (var l in ipList) {
+                //IPv4のオクテットを確認する（無効な指定は排除する）
+                var tmp = l.Split('.');
+                if(tmp.Length==4)
+                    Option.ArpReplyList.Add(l);
             }
             Option.AdapterIndex = listBoxAdapter.SelectedIndex;
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 
 namespace HideAndSeek {
 
@@ -9,45 +10,64 @@ namespace HideAndSeek {
         public RunMode RunMode { get; set; }
         public bool AckReply { get; set; }
         public List<string> ArpReplyList { get; set; }
-        public List<string> AdapterList { get; set; }
         public int AdapterIndex{ get; set; }
+
+        string _fileName;
         public Option() {
             RunMode = RunMode.Bind;
             AckReply = false;
-            
             AdapterIndex = 0;
-            AdapterList = new List<string>();
-
-            Capture capture = new Capture();
-            var ar = capture.GetAdapterList();
-            foreach (var a in ar) {
-                var sb = new StringBuilder();
-                sb.Append(a.Description);
-                sb.Append(" ");
-                foreach (var s in a.Ip) {
-                    sb.Append(s);
-                    sb.Append(" , ");
-                }
-                AdapterList.Add(sb.ToString());
-            }
-
             ArpReplyList = new List<string>();
-            //100..200
-            for (int i = 0; i <= 100; i++) {
-                ArpReplyList.Add(string.Format("192.168.64.{0}", i + 101));
+
+
+            _fileName = string.Format("{0}\\Option.dat",Directory.GetCurrentDirectory());
+
+            Read();
+        }
+        
+        public void Save() {
+            var lines = new List<string>();
+            lines.Add(string.Format("RunMode={0}", (int)RunMode));
+            lines.Add(string.Format("AckReply={0}", AckReply));
+            lines.Add(string.Format("AdapterIndex={0}", AdapterIndex));
+            var sb = new StringBuilder();
+            foreach (var ip in ArpReplyList) {
+                sb.Append(ip);
+                sb.Append(",");
             }
-            try {
-                var ip = ar[AdapterIndex].Ip[0];
-                var tmp = ip.Split('.');
-                if (tmp.Length == 4) {
-                    ArpReplyList.Clear();
-                    for (int i = 0; i <= 100; i++) {
-                        ArpReplyList.Add(string.Format("{0}.{1}.{2}.{3}", tmp[0], tmp[1], tmp[2], i + 101));
+            lines.Add(string.Format("ArpReplyList={0}", sb.ToString()));
+
+            File.WriteAllLines(_fileName, lines);
+        }
+        void Read() {
+            if (!File.Exists(_fileName))
+                return;
+            var lines = File.ReadAllLines(_fileName);
+            foreach (var l in lines) {
+                var tmp = l.Split(new char[]{'='}, StringSplitOptions.RemoveEmptyEntries);
+                if (tmp.Length == 2) {
+                    switch (tmp[0]) {
+                        case "RunMode":
+                            RunMode = (RunMode)(Int32.Parse(tmp[1]));
+                            break;
+                        case "AckReply":
+                            AckReply = Boolean.Parse(tmp[1]);
+                            break;
+                        case "AdapterIndex":
+                            AdapterIndex = Int32.Parse(tmp[1]);
+                            break;
+                        case "ArpReplyList":
+                            var t = tmp[1].Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                            ArpReplyList = new List<string>();
+                            foreach (var ip in t) {
+                                ArpReplyList.Add(ip);
+                            }
+                            break;
                     }
                 }
-            } catch {
-
             }
+
+        
         }
     }
 }

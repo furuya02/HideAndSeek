@@ -45,30 +45,13 @@ namespace HideAndSeek {
                 _capture.OnCapture += new OnCaptureHandler(_capture_OnCapture);
                 _captureView.Enable = true;
 
-                //Form2 dlg = new Form2();//デバイス選択ダイアログ
                 var ar = _capture.GetAdapterList();
-                //foreach (var a in ar) {
-                //    var sb = new StringBuilder();
-                //    sb.Append(a.Description);
-                //    sb.Append(" ");
-                //    foreach (var s in a.Ip) {
-                //        sb.Append(s);
-                //        sb.Append(" , ");
-                //    }
-                //
-                //    dlg.ListBox.Items.Add(sb.ToString());
-                //}
-                //dlg.ListBox.SelectedIndex = 0;
-
                 _captureView.Adapter = null;
-                //if (DialogResult.OK == dlg.ShowDialog()) {
-                //    int index = dlg.ListBox.SelectedIndex;
                 int index = option.AdapterIndex;
                 bool promiscuous = false;
-                    _capture.Start(ar[index].Name, promiscuous);
-                    _captureView.Adapter = ar[index];
-                    _substitute.Adapter = ar[index];
-                //}
+                _capture.Start(ar[index].Name, promiscuous);
+                _captureView.Adapter = ar[index];
+                _substitute.Adapter = ar[index];
 
             }
             _t.Start();
@@ -101,7 +84,7 @@ namespace HideAndSeek {
             }
 
             while (_life) {
-                
+
                 Stream ns = null;
                 TcpClient tcp = null;
                 if (_runMode == RunMode.Bind) {
@@ -119,22 +102,28 @@ namespace HideAndSeek {
                     }
                 }
 
+                _log.Set(string.Format("ns!=null"));
                 try {
+
                     
                     var buf = new byte[2048];//リクエストは2048バイト程度で収まるだろうとキメうちする
                     var size = 0;
                     int count = 0;
                     while (size <= 0) {
                         size = ns.Read(buf, 0, buf.Length);
+
+                        _log.Set(string.Format("count={0} size={1}",count,size));
+
                         if (size == 0) {
-                            Thread.Sleep(10);
+                            Thread.Sleep(100);
                             count++;
                         }
-                        if (count > 30) {//タイムアウト処理
+                        if (count > 3) {//タイムアウト処理
+                            _log.Set(string.Format("goto end count={0}", count));
+                            ns.Write(new byte[0], 0, 0);//FIN/ACK
                             goto end;
                         }
                     }
-                    //var size = ns.Read(buf, 0, buf.Length);
                     string request = Encoding.ASCII.GetString(buf, 0, size);
 
                     Job(request, ns);
