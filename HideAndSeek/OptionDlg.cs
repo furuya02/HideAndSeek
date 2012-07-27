@@ -41,10 +41,14 @@ namespace HideAndSeek {
                 }
                 listBoxAdapter.Items.Add(sb.ToString());
             }
-            listBoxAdapter.SelectedIndex=0;
-            if (listBoxAdapter.Items.Count > option.AdapterIndex)
-                listBoxAdapter.SelectedIndex = option.AdapterIndex;
-
+            if (listBoxAdapter.Items.Count > 0) {
+                listBoxAdapter.SelectedIndex = 0;
+                if (listBoxAdapter.Items.Count > option.AdapterIndex)
+                    listBoxAdapter.SelectedIndex = option.AdapterIndex;
+            } else {
+                //アダプタが列挙できていないときは、Pcapモードは使用できない
+                radioButtonPcap.Enabled = false;
+            }
             initDisplay();
         }
 

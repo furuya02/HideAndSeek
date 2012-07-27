@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 
 
 namespace HideAndSeek {
@@ -97,22 +98,26 @@ namespace HideAndSeek {
         //NICの一覧取得
         public static List<pcap_if> GetDeviceList() {
             var result = new List<pcap_if>();//デバイス一覧
-           
-            IntPtr alldevs = new IntPtr();//情報取得用のバッファ
-            StringBuilder errbuf = new StringBuilder(PCAP_ERRBUF_SIZE);//エラー用バッファ
- 
-            if (pcap_findalldevs(ref alldevs,errbuf) != -1) {
-                IntPtr p = alldevs;
-                while (!p.Equals(IntPtr.Zero)) {
-                    // pcap_if構造体で参照する
-                    pcap_if i = (pcap_if)Marshal.PtrToStructure(p, typeof(pcap_if));
-                    result.Add(i);
-                    p = i.next; // 次のアダプタ情報にポインタを移動
+
+            try {
+                IntPtr alldevs = new IntPtr();//情報取得用のバッファ
+                StringBuilder errbuf = new StringBuilder(PCAP_ERRBUF_SIZE);//エラー用バッファ
+
+                if (pcap_findalldevs(ref alldevs, errbuf) != -1) {
+                    IntPtr p = alldevs;
+                    while (!p.Equals(IntPtr.Zero)) {
+                        // pcap_if構造体で参照する
+                        pcap_if i = (pcap_if)Marshal.PtrToStructure(p, typeof(pcap_if));
+                        result.Add(i);
+                        p = i.next; // 次のアダプタ情報にポインタを移動
+                    }
+                    // 情報取得用のバッファの開放
+                    pcap_freealldevs(alldevs);
+                } else {
+                    // エラー (エラーの詳細は、errbufに格納されている)
                 }
-                // 情報取得用のバッファの開放
-                pcap_freealldevs(alldevs);
-            }else{
-                // エラー (エラーの詳細は、errbufに格納されている)
+            } catch {
+                MessageBox.Show("WinPcapがインストールされていません。");
             }
             return result;
         }
