@@ -30,6 +30,7 @@
             this.checkBoxAckReply = new System.Windows.Forms.CheckBox();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.listBoxAdapter = new System.Windows.Forms.ListBox();
+            this.radioButtonNone = new System.Windows.Forms.RadioButton();
             this.SuspendLayout();
             // 
             // buttonOk
@@ -56,12 +57,10 @@
             // radioButtonBind
             // 
             this.radioButtonBind.AutoSize = true;
-            this.radioButtonBind.Checked = true;
-            this.radioButtonBind.Location = new System.Drawing.Point(21, 20);
+            this.radioButtonBind.Location = new System.Drawing.Point(83, 12);
             this.radioButtonBind.Name = "radioButtonBind";
             this.radioButtonBind.Size = new System.Drawing.Size(46, 16);
             this.radioButtonBind.TabIndex = 8;
-            this.radioButtonBind.TabStop = true;
             this.radioButtonBind.Text = "Bind";
             this.radioButtonBind.UseVisualStyleBackColor = true;
             this.radioButtonBind.CheckedChanged += new System.EventHandler(this.checkBoxAckReply_CheckedChanged);
@@ -69,7 +68,7 @@
             // radioButtonPcap
             // 
             this.radioButtonPcap.AutoSize = true;
-            this.radioButtonPcap.Location = new System.Drawing.Point(73, 20);
+            this.radioButtonPcap.Location = new System.Drawing.Point(135, 12);
             this.radioButtonPcap.Name = "radioButtonPcap";
             this.radioButtonPcap.Size = new System.Drawing.Size(48, 16);
             this.radioButtonPcap.TabIndex = 9;
@@ -106,11 +105,24 @@
             this.listBoxAdapter.Size = new System.Drawing.Size(488, 76);
             this.listBoxAdapter.TabIndex = 12;
             // 
+            // radioButtonNone
+            // 
+            this.radioButtonNone.AutoSize = true;
+            this.radioButtonNone.Checked = true;
+            this.radioButtonNone.Location = new System.Drawing.Point(21, 12);
+            this.radioButtonNone.Name = "radioButtonNone";
+            this.radioButtonNone.Size = new System.Drawing.Size(49, 16);
+            this.radioButtonNone.TabIndex = 13;
+            this.radioButtonNone.TabStop = true;
+            this.radioButtonNone.Text = "None";
+            this.radioButtonNone.UseVisualStyleBackColor = true;
+            // 
             // OptionDlg
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(512, 276);
+            this.Controls.Add(this.radioButtonNone);
             this.Controls.Add(this.listBoxAdapter);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.checkBoxAckReply);
@@ -138,5 +150,6 @@
         private System.Windows.Forms.CheckBox checkBoxAckReply;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.ListBox listBoxAdapter;
+        private System.Windows.Forms.RadioButton radioButtonNone;
     }
 }

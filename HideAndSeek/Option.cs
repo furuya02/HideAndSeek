@@ -14,13 +14,13 @@ namespace HideAndSeek {
 
         string _fileName;
         public Option() {
-            RunMode = RunMode.Bind;
+            RunMode = RunMode.None;
             AckReply = false;
             AdapterIndex = 0;
             ArpReplyList = new List<string>();
 
 
-            _fileName = string.Format("{0}\\Option.dat",Directory.GetCurrentDirectory());
+            _fileName = string.Format("{0}\\Option.dat", Directory.GetCurrentDirectory());
 
             Read();
         }

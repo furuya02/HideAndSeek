@@ -9,8 +9,9 @@ using System.Windows.Forms;
 
 namespace HideAndSeek {
     public enum RunMode {
-        Bind = 0,
-        Pcap = 1,
+        None = 0,
+        Bind = 1,
+        Pcap = 2,
     }
     class WebServer:IDisposable {
 
@@ -36,7 +37,7 @@ namespace HideAndSeek {
             log.Set(string.Format("Mode={0}",_runMode));
 
             _t = new Thread(Loop) { IsBackground = true };
-            if (_runMode == RunMode.Bind) {
+            if (_runMode != RunMode.Pcap) {
                 _captureView.Enable= false;
             } else {
                 _capture = new Capture();
@@ -78,6 +79,9 @@ namespace HideAndSeek {
         }
         void Loop() {
             TcpListener listener = null;
+            if (_runMode == RunMode.None) {
+                return;
+            }
             if (_runMode == RunMode.Bind) {
                 listener = new TcpListener(_port);
                 listener.Start();//待ち受け開始

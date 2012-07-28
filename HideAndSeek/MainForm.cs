@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
+using System.IO;
 
 namespace HideAndSeek {
     public partial class MainForm : Form {
@@ -18,7 +19,6 @@ namespace HideAndSeek {
 
         public MainForm() {
             InitializeComponent();
-
             _option = new Option();
             _log = new Log(listBoxLog);
             _captureView = new CaptureView(listViewCapture);

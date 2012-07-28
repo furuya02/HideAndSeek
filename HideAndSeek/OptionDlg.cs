@@ -17,8 +17,9 @@ namespace HideAndSeek {
 
             Option = option;
 
-            radioButtonBind.Checked = option.RunMode == RunMode.Bind;
-            radioButtonPcap.Checked = option.RunMode == RunMode.Pcap;
+            radioButtonNone.Checked = (option.RunMode == RunMode.None);
+            radioButtonBind.Checked = (option.RunMode == RunMode.Bind);
+            radioButtonPcap.Checked = (option.RunMode == RunMode.Pcap);
 
             checkBoxAckReply.Checked = option.AckReply;
             var sb = new StringBuilder();
@@ -53,7 +54,9 @@ namespace HideAndSeek {
         }
 
         private void buttonOk_Click(object sender, EventArgs e) {
-            if (radioButtonBind.Checked)
+            if (radioButtonNone.Checked)
+                Option.RunMode = RunMode.None;
+            else if (radioButtonBind.Checked)
                 Option.RunMode = RunMode.Bind;
             else
                 Option.RunMode = RunMode.Pcap;
